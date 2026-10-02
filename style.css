@@ -171,6 +171,7 @@ h2 { margin: 0; }
     padding-top: 0;
     scrollbar-color: var(--amber-faint) transparent;
   }
+  .right.panel { padding-top: 0; }
   .right .tabs { position: sticky; top: 0; z-index: 2; background: var(--panel); margin: 0 -14px 14px; padding: 6px 10px 0; }
   .log-panel { grid-area: log; }
 }
@@ -712,3 +713,16 @@ textarea {
 .term-legend .k-you i { background: var(--amber); }
 .term-legend .k-rig i { background: var(--amber-dim); }
 .term-legend .k-chat i { background: var(--cyan); }
+
+/* Synergy mods and ghost perks */
+.tag-syn { color: var(--text); border-style: dashed; }
+.tag-ghost { color: var(--cyan); }
+.badge.ghost { background: var(--cyan); }
+.perk:disabled .mod-cost { color: var(--muted); }
+.perk[data-state="ready"] { border-color: var(--cyan); }
+.perk[data-state="ready"]:hover { background: var(--hover); }
+.perk[data-state="ready"] .mod-cost { color: var(--cyan); }
+.perk[data-state="owned"] { opacity: 1; border-color: var(--amber-dim); background: var(--panel); }
+.perk[data-state="owned"] .mod-cost { color: var(--amber); }
+.perk[data-state="owned"] .mod-cost::before { content: "✓ "; }
+.perk[data-state="locked"], .perk[data-state="poor"] { opacity: 0.6; }

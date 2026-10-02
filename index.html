@@ -68,7 +68,7 @@
         <button type="button" role="tab" id="tabbtn-rigs" data-tab="rigs" aria-controls="tab-rigs" aria-selected="true">Rigs</button>
         <button type="button" role="tab" id="tabbtn-mods" data-tab="mods" aria-controls="tab-mods" aria-selected="false">Mods <span class="badge" id="modsBadge" hidden></span></button>
         <button type="button" role="tab" id="tabbtn-trophies" data-tab="trophies" aria-controls="tab-trophies" aria-selected="false">Trophies</button>
-        <button type="button" role="tab" id="tabbtn-dark" data-tab="dark" aria-controls="tab-dark" aria-selected="false">Go dark</button>
+        <button type="button" role="tab" id="tabbtn-dark" data-tab="dark" aria-controls="tab-dark" aria-selected="false">Prestige <span class="badge ghost" id="darkBadge" hidden></span></button>
         <button type="button" role="tab" id="tabbtn-system" data-tab="system" aria-controls="tab-system" aria-selected="false">System</button>
       </nav>
 
@@ -100,7 +100,7 @@
 
       <div class="tab-panel" id="tab-dark" role="tabpanel" aria-labelledby="tabbtn-dark" hidden>
         <h2 class="tab-title">Go dark</h2>
-        <p class="tab-intro">Wipe your identity and start a new run. Ghost tokens are permanent: each one adds +10% to all income and keystrokes, forever.</p>
+        <p class="tab-intro">Going dark is the prestige reset: wipe your identity and start a new run in exchange for ghost tokens. Every token you have ever earned adds +10% to all income and keystrokes, forever. You can also spend tokens on ghost perks below, and spending them never lowers that bonus.</p>
         <div class="dark-grid">
           <div class="dark-stat">
             <span class="label">Ghost tokens held</span>
@@ -115,6 +115,10 @@
         </div>
         <p class="warn">Going dark resets your wallet, rigs, mods and targets. You keep ghost tokens, trophies and stats.</p>
         <button class="danger-btn" id="goDarkBtn" type="button">Go dark</button>
+
+        <h2 class="tab-title">Ghost perks</h2>
+        <p class="tab-intro">Permanent upgrades that survive every reset. Tokens to spend: <strong id="ghostAvail">0</strong></p>
+        <ul class="mods perks" id="perks"></ul>
       </div>
 
       <div class="tab-panel" id="tab-system" role="tabpanel" aria-labelledby="tabbtn-system" hidden>

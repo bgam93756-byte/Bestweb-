@@ -4,7 +4,6 @@
   // ---------- Constants ----------
   const SAVE_KEY = 'hacker-idle-save-v1';
   const GROWTH = 1.15;              // each rig costs 15% more than the last
-  const OFFLINE_CAP = 8 * 3600;     // max seconds of offline earnings
   const TOKEN_BASE = 1e7;           // lifetime ₿ needed for the first ghost token
   const COIN = '₿';
 
@@ -76,9 +75,9 @@
   const BREACH_BONUS = 0.1;
 
   // Rig tier mods: each one doubles that rig's output.
-  const TIER_REQ = [1, 5, 25, 50, 100, 150, 200];
-  const TIER_COST = [10, 50, 500, 5e4, 5e6, 5e8, 5e10];
-  const TIER_NAMES = ['v2.0', 'Turbo', 'Pro', 'Enterprise', 'Ultra', 'Quantum Edition', 'Final Form'];
+  const TIER_REQ = [1, 5, 25, 50, 100, 150, 200, 250, 300, 400];
+  const TIER_COST = [10, 50, 500, 5e4, 5e6, 5e8, 5e10, 5e12, 5e14, 5e17];
+  const TIER_NAMES = ['v2.0', 'Turbo', 'Pro', 'Enterprise', 'Ultra', 'Quantum Edition', 'Final Form', 'Overclocked', 'Legendary', 'Ascended'];
 
   const MODS = [];
   RIGS.forEach(r => TIER_REQ.forEach((req, t) => MODS.push({
@@ -92,6 +91,10 @@
     { id: 'kb2', kind: 'clickMult', value: 2, cost: 600,   name: 'Energy Drink Six-Pack', desc: 'Keystrokes ×2.' },
     { id: 'kb3', kind: 'clickMult', value: 2, cost: 8000,  name: 'Hacker Hoodie',         desc: 'Hood up. Keystrokes ×2.' },
     { id: 'kb4', kind: 'clickMult', value: 2, cost: 2e5,   name: 'RGB Everything',        desc: 'Rainbow lights. Keystrokes ×2.' },
+    { id: 'kb5', kind: 'clickMult', value: 2, cost: 5e6,   name: 'Ergonomic Split Keyboard', desc: 'Two halves, twice the speed. Keystrokes ×2.' },
+    { id: 'kb6', kind: 'clickMult', value: 2, cost: 5e9,   name: 'Holographic Keyboard',  desc: 'Type on thin air. Keystrokes ×2.' },
+    { id: 'kb7', kind: 'clickMult', value: 2, cost: 5e12,  name: 'One Giant Key',         desc: 'Every key is the hack key. Keystrokes ×2.' },
+    { id: 'kb8', kind: 'clickMult', value: 2, cost: 5e16,  name: 'Thought-to-Text Implant', desc: 'Just think about typing. Keystrokes ×2.' },
     { id: 'ks1', kind: 'clickPct', value: 0.01, cost: 5e4,  name: 'Macro Script',          desc: 'Each keystroke also earns 1% of your per-second income.' },
     { id: 'ks2', kind: 'clickPct', value: 0.01, cost: 5e6,  name: 'Neural Interface',      desc: 'Keystrokes earn another 1% of per-second income.' },
     { id: 'ks3', kind: 'clickPct', value: 0.02, cost: 5e8,  name: 'Overclocked Fingers',   desc: 'Keystrokes earn another 2% of per-second income.' },
@@ -108,9 +111,49 @@
     { id: 'g8', kind: 'global', value: 2,    cost: 2e20, name: 'Infinite Coffee Machine',    desc: 'All income ×2.' },
     { id: 'p1', kind: 'packetRate',  cost: 5e4, name: 'Packet Sniffer', desc: 'Data packets show up twice as often.' },
     { id: 'p2', kind: 'packetPower', cost: 5e6, name: 'Packet Magnet',  desc: 'Data packet rewards ×2.' },
+    { id: 'p3', kind: 'packetPower', cost: 5e9, name: 'Packet Vacuum',  desc: 'Data packet rewards ×2 again.' },
+    { id: 'f1', kind: 'buffTime',    cost: 5e7, name: 'Caffeine Drip',  desc: 'Overclock and frenzy last 50% longer.' },
     { id: 't1', kind: 'traceTime',   cost: 2e5, name: 'Log Scrubber',   desc: 'Traces give you 12 seconds instead of 8.' },
   ].forEach(m => MODS.push(m));
+  // Synergy mods: one rig gets stronger for each of another rig you own.
+  [
+    ['syn1', 'kiddie', 'toaster', 0.02, 'Kiddie-Toaster Pact'],
+    ['syn2', 'miner', 'hamster', 0.01, 'Hamster Mining Union'],
+    ['syn3', 'worm', 'spam', 0.01, 'Spam Worm Collab'],
+    ['syn4', 'bazaar', 'uplink', 0.01, 'Orbital Bazaar'],
+    ['syn5', 'core', 'worm', 0.01, 'AI Family Reunion'],
+    ['syn6', 'root', 'quantum', 0.01, 'Quantum Root Kit'],
+    ['syn7', 'timeloop', 'multiverse', 0.01, 'Paradox Engine'],
+    ['syn8', 'dev', 'godmode', 0.01, 'Developer Mode'],
+  ].forEach(([id, rig, per, value, name]) => MODS.push({
+    id, kind: 'synergy', rig, per, value, name, req: 15,
+    desc: `${RIG_BY_ID[rig].name} +${value * 100}% for each ${RIG_BY_ID[per].name} you own. Needs 15 of each.`,
+    cost: Math.max(RIG_BY_ID[rig].cost, RIG_BY_ID[per].cost) * 2000,
+  }));
   const MOD_BY_ID = Object.fromEntries(MODS.map(m => [m.id, m]));
+
+  // Ghost perks: bought with ghost tokens, kept forever (they survive going dark).
+  const PERKS = [
+    { id: 'p_start1',  cost: 1,   name: 'Head Start',          desc: 'Start every run with ₿1,000.' },
+    { id: 'p_keys',    cost: 2,   name: 'Muscle Memory',       desc: 'Keystrokes ×3, forever.' },
+    { id: 'p_kiddies', cost: 3,   name: 'Old Friends',         desc: 'Start every run with 10 Script Kiddies and 5 Zombie Toasters.' },
+    { id: 'p_offline', cost: 3,   name: 'Night Shift',         desc: 'Offline earnings last up to 24 hours instead of 8.' },
+    { id: 'p_packet',  cost: 5,   name: 'Lucky Packets',       desc: 'Data packets show up 50% more often and stay twice as long.' },
+    { id: 'p_trace',   cost: 5,   name: 'Clean Record',        desc: 'Getting traced costs 1% of your wallet instead of 5%.' },
+    { id: 'p_mods',    cost: 8,   name: 'Keep the Keyboard',   desc: 'Start every run with the first four keyboard mods installed.' },
+    { id: 'p_cheap',   cost: 10,  name: 'Bulk Discount',       desc: 'All rigs cost 10% less.' },
+    { id: 'p_breach',  cost: 15,  name: 'Insider Contacts',    desc: 'Target loot ×3.' },
+    { id: 'p_frenzy',  cost: 20,  name: 'Caffeine IV',         desc: 'Overclock and frenzy last twice as long.' },
+    { id: 'p_start2',  cost: 25,  name: 'Trust Fund',          desc: 'Start every run with ₿1M.', needs: 'p_start1' },
+    { id: 'p_auto',    cost: 40,  name: 'Auto-Clicker Daemon', desc: 'Presses a key for you 5 times a second, forever.' },
+    { id: 'p_ghost',   cost: 50,  name: 'Ghost Network',       desc: 'Each ghost token gives +12% instead of +10%.' },
+    { id: 'p_cheap2',  cost: 75,  name: 'Volume Licensing',    desc: 'Rigs cost another 10% less.', needs: 'p_cheap' },
+    { id: 'p_target',  cost: 100, name: 'Skeleton Key',        desc: 'Start every run with the first 3 targets already breached.' },
+    { id: 'p_auto2',   cost: 150, name: 'Auto-Clicker Swarm',  desc: '15 more automatic keystrokes a second.', needs: 'p_auto' },
+    { id: 'p_start3',  cost: 200, name: 'Offshore Account',    desc: 'Start every run with ₿1B.', needs: 'p_start2' },
+    { id: 'p_rootkit', cost: 500, name: 'Root Kit',            desc: 'All income ×3, forever.' },
+  ];
+  const PERK_BY_ID = Object.fromEntries(PERKS.map(p => [p.id, p]));
 
   const totalRigs = () => RIGS.reduce((n, r) => n + (s.rigs[r.id] || 0), 0);
   const TROPHIES = [
@@ -146,6 +189,8 @@
     ['trf',    'Busted',                'Get caught by a trace.',                () => s.stats.tracesFailed >= 1],
     ['g1',     'Going Dark',            'Go dark for the first time.',           () => s.stats.prestiges >= 1],
     ['g100',   'Phantom',               'Hold 100 ghost tokens.',                () => s.ghost >= 100],
+    ['gp1',    'Afterlife Shopper',     'Buy your first ghost perk.',            () => s.perks.length >= 1],
+    ['gpall',  'Ghost King',            'Own every ghost perk.',                 () => s.perks.length >= PERKS.length],
   ].map(([id, name, desc, check]) => ({ id, name, desc, check }));
   const TROPHY_BY_ID = Object.fromEntries(TROPHIES.map(t => [t.id, t]));
 
@@ -248,6 +293,8 @@ sudo make me_a_sandwich
       allEarned: 0,
       keystrokes: 0,
       ghost: 0,
+      ghostSpent: 0,
+      perks: [],
       trophies: [],
       stats: { packets: 0, tracesEvaded: 0, tracesFailed: 0, prestiges: 0, bestCps: 0, totalBreached: 0, playTime: 0, started: Date.now() },
       settings: { sound: false, buyAmt: 1, tab: 'rigs' },
@@ -276,7 +323,7 @@ sudo make me_a_sandwich
       settings: { ...base.settings, ...(obj.settings || {}) },
       rigs: {},
     };
-    for (const k of ['bank', 'runEarned', 'allEarned', 'keystrokes', 'ghost', 'breached', 'targetHp', 'lastSeen']) {
+    for (const k of ['bank', 'runEarned', 'allEarned', 'keystrokes', 'ghost', 'ghostSpent', 'breached', 'targetHp', 'lastSeen']) {
       if (!Number.isFinite(out[k]) || out[k] < 0) out[k] = base[k];
     }
     for (const k of Object.keys(base.stats)) {
@@ -290,6 +337,8 @@ sudo make me_a_sandwich
     }
     out.breached = Math.min(Math.floor(out.breached), TARGETS.length);
     out.trophies = Array.isArray(obj.trophies) ? obj.trophies.filter(id => TROPHY_BY_ID[id]) : [];
+    out.perks = Array.isArray(obj.perks) ? obj.perks.filter(id => PERK_BY_ID[id]) : [];
+    out.ghostSpent = Math.min(out.ghostSpent, out.ghost);
     if (Array.isArray(obj.mods)) obj.mods.forEach(id => { if (MOD_BY_ID[id]) ownedMods.add(id); });
     if (![1, 10, 100, 'max'].includes(out.settings.buyAmt)) out.settings.buyAmt = 1;
     delete out.mods;
@@ -308,27 +357,37 @@ sudo make me_a_sandwich
 
   // ---------- Economy ----------
   const buffActive = id => buffs.some(b => b.id === id && b.until > Date.now());
+  const hasPerk = id => s.perks.includes(id);
+  const tokenBonus = () => (hasPerk('p_ghost') ? 0.12 : 0.1);
+  const rigDiscount = () => (hasPerk('p_cheap') ? 0.9 : 1) * (hasPerk('p_cheap2') ? 0.9 : 1);
+  const offlineCap = () => (hasPerk('p_offline') ? 24 : 8) * 3600;
+  const buffTimeMult = () => (ownedMods.has('f1') ? 1.5 : 1) * (hasPerk('p_frenzy') ? 2 : 1);
+  const packetPower = () => (ownedMods.has('p2') ? 2 : 1) * (ownedMods.has('p3') ? 2 : 1);
 
   function recalc() {
     let mult = 1;
     let clickMult = 1;
     let clickPct = 0;
     const tiers = {};
+    const syn = {};
     for (const id of ownedMods) {
       const m = MOD_BY_ID[id];
       if (m.kind === 'global') mult *= m.value;
       else if (m.kind === 'rig') tiers[m.rig] = (tiers[m.rig] || 0) + 1;
+      else if (m.kind === 'synergy') syn[m.rig] = (syn[m.rig] || 1) * (1 + m.value * (s.rigs[m.per] || 0));
       else if (m.kind === 'clickMult') clickMult *= m.value;
       else if (m.kind === 'clickPct') clickPct += m.value;
     }
-    mult *= 1 + 0.1 * s.ghost;
+    mult *= 1 + tokenBonus() * s.ghost;
+    if (hasPerk('p_rootkit')) mult *= 3;
+    if (hasPerk('p_keys')) clickMult *= 3;
     mult *= 1 + 0.02 * s.trophies.length;
     mult *= 1 + BREACH_BONUS * s.breached;
     D.mult = mult;
 
     let cps = 0;
     for (const r of RIGS) {
-      const rate = r.rate * Math.pow(2, tiers[r.id] || 0) * mult;
+      const rate = r.rate * Math.pow(2, tiers[r.id] || 0) * (syn[r.id] || 1) * mult;
       D.rigRate[r.id] = rate;
       cps += rate * (s.rigs[r.id] || 0);
     }
@@ -336,6 +395,9 @@ sudo make me_a_sandwich
     D.cps = cps * (buffActive('overclock') ? 7 : 1);
     D.clickPct = clickPct;
     D.click = (clickMult * mult + D.cps * clickPct) * (buffActive('frenzy') ? 10 : 1);
+    D.autoKeys = (hasPerk('p_auto') ? 5 : 0) + (hasPerk('p_auto2') ? 15 : 0);
+    D.autoCps = D.click * D.autoKeys;
+    D.totalCps = D.cps + D.autoCps;
     if (D.baseCps > s.stats.bestCps) s.stats.bestCps = D.baseCps;
   }
 
@@ -357,7 +419,7 @@ sudo make me_a_sandwich
 
   function breach() {
     const t = TARGETS[s.breached];
-    const loot = t.hp * LOOT_RATIO;
+    const loot = t.hp * LOOT_RATIO * (hasPerk('p_breach') ? 3 : 1);
     s.breached += 1;
     s.targetHp = 0;
     s.stats.totalBreached += 1;
@@ -370,11 +432,11 @@ sudo make me_a_sandwich
   }
 
   function rigCost(r, owned, n) {
-    const first = r.cost * Math.pow(GROWTH, owned);
+    const first = r.cost * rigDiscount() * Math.pow(GROWTH, owned);
     return first * (Math.pow(GROWTH, n) - 1) / (GROWTH - 1);
   }
   function maxAfford(r, owned, bank) {
-    const first = r.cost * Math.pow(GROWTH, owned);
+    const first = r.cost * rigDiscount() * Math.pow(GROWTH, owned);
     let n = Math.floor(Math.log(bank * (GROWTH - 1) / first + 1) / Math.log(GROWTH));
     if (n < 0 || !Number.isFinite(n)) n = 0;
     while (n > 0 && rigCost(r, owned, n) > bank) n -= 1;
@@ -404,6 +466,7 @@ sudo make me_a_sandwich
 
   function modUnlocked(m) {
     if (m.kind === 'rig') return (s.rigs[m.rig] || 0) >= m.req;
+    if (m.kind === 'synergy') return (s.rigs[m.rig] || 0) >= m.req && (s.rigs[m.per] || 0) >= m.req;
     return s.runEarned >= m.cost * 0.25;
   }
 
@@ -424,6 +487,41 @@ sudo make me_a_sandwich
   const tokensFor = all => Math.floor(Math.sqrt(all / TOKEN_BASE));
   const pendingTokens = () => Math.max(0, tokensFor(s.allEarned) - s.ghost);
 
+  const ghostAvail = () => Math.max(0, s.ghost - s.ghostSpent);
+
+  // Start-of-run perks. Only ever raise values, so applying them twice is safe.
+  function applyStartPerks() {
+    const cash = hasPerk('p_start3') ? 1e9 : hasPerk('p_start2') ? 1e6 : hasPerk('p_start1') ? 1e3 : 0;
+    if (s.bank < cash) s.bank = cash;
+    if (hasPerk('p_kiddies')) {
+      s.rigs.kiddie = Math.max(s.rigs.kiddie || 0, 10);
+      s.rigs.toaster = Math.max(s.rigs.toaster || 0, 5);
+    }
+    if (hasPerk('p_mods')) ['kb1', 'kb2', 'kb3', 'kb4'].forEach(id => ownedMods.add(id));
+    if (hasPerk('p_target') && s.breached < 3) { s.breached = 3; s.targetHp = 0; }
+  }
+
+  function perkState(p) {
+    if (hasPerk(p.id)) return 'owned';
+    if (p.needs && !hasPerk(p.needs)) return 'locked';
+    return ghostAvail() >= p.cost ? 'ready' : 'poor';
+  }
+
+  function buyPerk(p) {
+    if (perkState(p) !== 'ready') return;
+    s.ghostSpent += p.cost;
+    s.perks.push(p.id);
+    applyStartPerks();
+    recalc();
+    sfx.breach();
+    addLog(`Ghost perk unlocked: ${p.name}.`, 'good');
+    toast('Ghost perk', p.name, 'good');
+    save();
+    renderFast();
+    renderSlow();
+  }
+
+  let darkNotified = false;
   function goDark() {
     const gain = pendingTokens();
     if (gain < 1) return;
@@ -431,12 +529,14 @@ sudo make me_a_sandwich
     Object.assign(s, freshRun());
     ownedMods.clear();
     buffs = [];
+    darkNotified = false;
+    applyStartPerks();
     s.stats.prestiges += 1;
     recalc();
     hidePacket();
     if (trace.active) endTrace();
     termWrite(`\n\n>>> GOING DARK... identity wiped.\n>>> ghost tokens: ${fmt(s.ghost)}\n\n`);
-    addLog(`You went dark and earned ${fmt(gain)} ghost tokens. All income is now +${fmt(s.ghost * 10)}%.`, 'good');
+    addLog(`You went dark and earned ${fmt(gain)} ghost tokens. All income is now +${fmt(s.ghost * tokenBonus() * 100)}%.`, 'good');
     toast('You went dark', `+${fmt(gain)} ghost tokens`, 'good');
     sfx.breach();
     save();
@@ -453,7 +553,7 @@ sudo make me_a_sandwich
 
   const packet = { active: false, until: 0, next: 0 };
   function schedulePacket() {
-    const f = ownedMods.has('p1') ? 0.5 : 1;
+    const f = (ownedMods.has('p1') ? 0.5 : 1) * (hasPerk('p_packet') ? 0.67 : 1);
     packet.next = Date.now() + rand(70, 160) * 1000 * f;
   }
   function spawnPacket() {
@@ -463,7 +563,7 @@ sudo make me_a_sandwich
     el.style.top = rand(110, Math.max(120, h - 90)) + 'px';
     el.hidden = false;
     packet.active = true;
-    packet.until = Date.now() + 13000;
+    packet.until = Date.now() + 13000 * (hasPerk('p_packet') ? 2 : 1);
     sfx.packet();
   }
   function hidePacket() {
@@ -475,7 +575,8 @@ sudo make me_a_sandwich
     if (!packet.active) return;
     hidePacket();
     s.stats.packets += 1;
-    const power = ownedMods.has('p2') ? 2 : 1;
+    const power = packetPower();
+    const dur = buffTimeMult();
     const roll = Math.random();
     let text;
     if (roll < 0.55) {
@@ -484,13 +585,13 @@ sudo make me_a_sandwich
       text = '+' + money(amt);
       addLog(`Data packet: found ${money(amt)} in a forgotten wallet.`, 'good');
     } else if (roll < 0.85) {
-      addBuff('overclock', 'Overclock: income ×7', 30 * power);
+      addBuff('overclock', 'Overclock: income ×7', 30 * dur);
       text = 'OVERCLOCK ×7';
-      addLog(`Data packet: overclock! Income ×7 for ${30 * power} seconds.`, 'good');
+      addLog(`Data packet: overclock! Income ×7 for ${Math.round(30 * dur)} seconds.`, 'good');
     } else {
-      addBuff('frenzy', 'Frenzy: keystrokes ×10', 20 * power);
+      addBuff('frenzy', 'Frenzy: keystrokes ×10', 20 * dur);
       text = 'FRENZY ×10';
-      addLog(`Data packet: keystroke frenzy! Keystrokes ×10 for ${20 * power} seconds.`, 'good');
+      addLog(`Data packet: keystroke frenzy! Keystrokes ×10 for ${Math.round(20 * dur)} seconds.`, 'good');
     }
     const x = ev && ev.clientX ? ev.clientX : window.innerWidth / 2;
     const y = ev && ev.clientY ? ev.clientY : window.innerHeight / 2;
@@ -529,9 +630,10 @@ sudo make me_a_sandwich
   function failTrace() {
     endTrace();
     s.stats.tracesFailed += 1;
-    const loss = s.bank * 0.05;
+    const pct = hasPerk('p_trace') ? 0.01 : 0.05;
+    const loss = s.bank * pct;
     s.bank -= loss;
-    addLog(`Traced! The sysadmin seized ${money(loss)}, 5% of your wallet.`, 'bad');
+    addLog(`Traced! The sysadmin seized ${money(loss)}, ${pct * 100}% of your wallet.`, 'bad');
   }
 
   // ---------- Trophies ----------
@@ -822,6 +924,7 @@ sudo make me_a_sandwich
     clickMult: { label: 'Keys', cls: 'keys' },
     clickPct: { label: 'Keys', cls: 'keys' },
     global: { label: 'All income', cls: 'all' },
+    synergy: { label: 'Synergy', cls: 'syn' },
     event: { label: 'Events', cls: 'event' },
   };
   let modsKey = '';
@@ -862,6 +965,37 @@ sudo make me_a_sandwich
         owned.appendChild(li);
       });
       setText($('#ownedCount'), String(ownedMods.size));
+    }
+  }
+
+  const perkEls = {};
+  function buildPerks() {
+    const ul = $('#perks');
+    ul.textContent = '';
+    for (const p of PERKS) {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'mod perk';
+      const tag = document.createElement('span'); tag.className = 'mod-tag tag-ghost';
+      tag.textContent = `${p.cost} token${p.cost === 1 ? '' : 's'}`;
+      const name = document.createElement('span'); name.className = 'mod-name'; name.textContent = p.name;
+      const desc = document.createElement('span'); desc.className = 'mod-desc'; desc.textContent = p.desc;
+      const status = document.createElement('span'); status.className = 'mod-cost';
+      b.append(tag, name, desc, status);
+      b.addEventListener('click', () => buyPerk(p));
+      li.appendChild(b);
+      ul.appendChild(li);
+      perkEls[p.id] = { b, status };
+    }
+  }
+  function renderPerks() {
+    for (const p of PERKS) {
+      const { b, status } = perkEls[p.id];
+      const st = perkState(p);
+      b.disabled = st !== 'ready';
+      b.dataset.state = st;
+      setText(status, st === 'owned' ? 'Owned' : st === 'locked' ? `Needs ${PERK_BY_ID[p.needs].name}` : st === 'ready' ? 'Buy' : `Need ${fmt(p.cost - ghostAvail())} more`);
     }
   }
 
@@ -922,7 +1056,7 @@ sudo make me_a_sandwich
     else shownBank += (s.bank - shownBank) * 0.35;
     setText($('#bank'), money(shownBank));
     renderRoute();
-    setText($('#cps'), money(D.cps, true));
+    setText($('#cps'), money(D.totalCps, true));
     setText($('#kps'), money(D.click, true));
     setText($('#hackBtnVal'), '+' + money(D.click, true));
 
@@ -947,8 +1081,8 @@ sudo make me_a_sandwich
       $('#targetBar').style.width = pct.toFixed(1) + '%';
       $('#targetBarWrap').setAttribute('aria-valuenow', String(Math.floor(pct)));
       setText($('#targetProgress'), `${fmt(s.targetHp)} / ${fmt(t.hp)} firewall`);
-      setText($('#targetEta'), D.cps > 0 ? `Breach in ${fmtTime((t.hp - s.targetHp) / D.cps)}` : 'Type or buy rigs to break in');
-      setText($('#targetReward'), `Loot: ${money(t.hp * LOOT_RATIO)} and +10% income`);
+      setText($('#targetEta'), D.totalCps > 0 ? `Breach in ${fmtTime((t.hp - s.targetHp) / D.totalCps)}` : 'Type or buy rigs to break in');
+      setText($('#targetReward'), `Loot: ${money(t.hp * LOOT_RATIO * (hasPerk('p_breach') ? 3 : 1))} and +10% income`);
     }
 
     // Rigs
@@ -1029,7 +1163,17 @@ sudo make me_a_sandwich
 
     const gain = pendingTokens();
     setText($('#ghostHeld'), fmt(s.ghost));
-    setText($('#ghostBonus'), `+${fmt(s.ghost * 10)}% income and keystrokes`);
+    setText($('#ghostBonus'), `+${fmt(s.ghost * tokenBonus() * 100)}% income and keystrokes`);
+    setText($('#ghostAvail'), fmt(ghostAvail()));
+    renderPerks();
+    const badge = $('#darkBadge');
+    const anyPerk = PERKS.some(p => perkState(p) === 'ready');
+    badge.hidden = gain < 1 && !anyPerk;
+    setText(badge, gain >= 1 ? '+' + fmt(gain) : '!');
+    if (gain >= 1 && !darkNotified) {
+      darkNotified = true;
+      toast('Prestige ready', `Go dark now for +${fmt(gain)} ghost tokens`, 'good');
+    }
     setText($('#ghostGain'), '+' + fmt(gain));
     const nextAt = Math.pow(tokensFor(s.allEarned) + 1, 2) * TOKEN_BASE;
     setText($('#ghostNext'), `Next token at ${money(nextAt)} lifetime earnings (you have ${money(s.allEarned)})`);
@@ -1230,13 +1374,13 @@ sudo make me_a_sandwich
     let dt = (now - last) / 1000;
     last = now;
     if (!(dt > 0)) dt = 0;
-    dt = Math.min(dt, OFFLINE_CAP);
+    dt = Math.min(dt, offlineCap());
 
     const before = buffs.length;
     buffs = buffs.filter(b => b.until > now);
     if (buffs.length !== before) recalc();
 
-    const gain = D.cps * dt;
+    const gain = D.totalCps * dt;
     if (gain > 0) { earn(gain); hack(gain); }
     s.stats.playTime += dt;
     if (!document.hidden) rigTyping(dt);
@@ -1274,6 +1418,7 @@ sudo make me_a_sandwich
 
     buildRigs();
     buildRoute();
+    buildPerks();
     buildTrophies();
     buildStats();
     bindEvents();
@@ -1290,14 +1435,14 @@ sudo make me_a_sandwich
 
     if (!fromHot && data && data.lastSeen) {
       const away = (Date.now() - data.lastSeen) / 1000;
-      if (away > 30 && D.baseCps > 0) {
-        const secs = Math.min(away, OFFLINE_CAP);
-        const amt = D.baseCps * secs;
+      if (away > 30 && D.baseCps + D.autoCps > 0) {
+        const secs = Math.min(away, offlineCap());
+        const amt = (D.baseCps + D.autoCps) * secs;
         earn(amt);
         hack(amt);
         $('#welcomeText').textContent =
           `You were away for ${fmtTime(away)}. Your rigs earned ${money(amt)} while you were gone` +
-          (away > OFFLINE_CAP ? ' (offline earnings stop after 8 hours).' : '.');
+          (away > offlineCap() ? ` (offline earnings stop after ${offlineCap() / 3600} hours).` : '.');
         $('#welcome').hidden = false;
         addLog(`Offline earnings: ${money(amt)}.`, 'good');
       }
