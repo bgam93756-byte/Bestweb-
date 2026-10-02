@@ -701,3 +701,14 @@ textarea {
   .rig.flash, .mod.flash { animation: none; }
   .rig-prog { transition: none; }
 }
+
+/* Terminal text colors: you, your rigs, rig chatter, system */
+.t-you { color: var(--amber); }
+.t-rig { color: var(--amber-dim); text-shadow: none; }
+.t-chat { color: var(--cyan); text-shadow: 0 0 4px rgba(111, 214, 232, 0.35); }
+.t-sys { color: var(--amber-hi); }
+.term-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+.term-legend i { display: inline-block; width: 8px; height: 8px; margin-right: 5px; vertical-align: baseline; }
+.term-legend .k-you i { background: var(--amber); }
+.term-legend .k-rig i { background: var(--amber-dim); }
+.term-legend .k-chat i { background: var(--cyan); }

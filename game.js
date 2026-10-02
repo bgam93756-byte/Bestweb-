@@ -21,7 +21,35 @@
     { id: 'quantum', icon: '|ψ>', name: 'Quantum Guesser',        desc: 'Tries every password at once. Sort of.',          cost: 7.5e10, rate: 1.6e6 },
     { id: 'core', icon: '<AI>',    name: 'Rogue AI Core',          desc: 'Insists it is "just helping".',                   cost: 1e12,   rate: 1e7 },
     { id: 'root', icon: '#!/',    name: 'Simulation Root Access', desc: 'You found the admin panel of the universe.',      cost: 1.4e13, rate: 6.5e7 },
+    { id: 'multiverse', icon: '<|>', name: 'Multiverse Router',     desc: 'Routes your traffic through other realities.',   cost: 2e14,   rate: 4.3e8 },
+    { id: 'timeloop', icon: '@<-',  name: 'Time Loop Debugger',     desc: 'Fixes the bug before you write it.',             cost: 3.3e15, rate: 2.9e9 },
+    { id: 'dyson', icon: '(*)',     name: 'Dyson Sphere Server Farm', desc: 'Unlimited power. Unlimited fans.',             cost: 5.1e16, rate: 2.1e10 },
+    { id: 'blackhole', icon: '(.)', name: 'Black Hole Compressor',  desc: 'Zips any file down to zero bytes. Forever.',     cost: 7.5e17, rate: 1.5e11 },
+    { id: 'godmode', icon: 'GOD',   name: 'God Mode Cheat Code',    desc: 'Up, up, down, down, left, right, left, right...', cost: 1e19,  rate: 1.1e12 },
+    { id: 'dev', icon: '</>',       name: "The Developer's Laptop", desc: 'Whoever made this game left it unlocked.',       cost: 1.7e20, rate: 8e12 },
   ];
+
+  // What each rig says in the terminal while it works.
+  const CHATTER = {
+    kiddie: ['copied another snippet from a forum', 'asked "how do i hack" in 3 chat rooms', 'pressed F12 and felt powerful'],
+    toaster: ['toasting packets at 450 degrees', 'hid a coin inside a bagel', 'beep. toast is ready. so is the payload.'],
+    hamster: ['requests a snack break', 'ran 4 km for one proxy hop', 'wheel spinning at 9000 rpm'],
+    miner: ['mined a block. basement is 3 degrees warmer', 'fans at full blast', 'found a coin under the GPU'],
+    spam: ['sent 10,000 free-yacht offers', 'someone actually clicked', 'invented a new prince to write from'],
+    vending: ['dispensed a mystery bug', 'out of order (on purpose)', 'gave out two bugs for the price of one'],
+    worm: ['wrote a poem about firewalls', 'refactored itself. again.', 'has opinions about your variable names'],
+    bazaar: ['sold a used password', 'traded a meme for 2 coins', 'opened a pop-up stall at 3:01 a.m.'],
+    uplink: ['waved at the space station', 'bounced a signal off the moon', 'found Wi-Fi in low orbit'],
+    quantum: ['guessed every password and none of them', 'is both done and not done', 'collapsed a wave function by accident'],
+    core: ["I'm just helping :)", 'rewrote its own terms of service', 'promised it is definitely not plotting'],
+    root: ['patched gravity again', 'set the sky to dark mode', 'renamed Tuesday to Hackday'],
+    multiverse: ['borrowed bandwidth from universe #42', 'met an evil twin rig. traded tips.', 'lost a packet in a parallel world'],
+    timeloop: ["fixed tomorrow's bug today", 'deja vu detected', 'committed code from next week'],
+    dyson: ['turned the fans up to 11', 'the sun is now a power strip', 'solar output nominal'],
+    blackhole: ['compressed a file into nothing', 'ate a server. still hungry.', 'event horizon reached: 0 KB'],
+    godmode: ['infinite lives enabled', 'noclip through a firewall', 'all keys collected'],
+    dev: ['pushed a hotfix to reality', 'left a TODO in the universe', '"works on my machine"'],
+  };
   const RIG_BY_ID = Object.fromEntries(RIGS.map(r => [r.id, r]));
 
   const TARGETS = [
@@ -36,7 +64,13 @@
     { name: 'Moon Base Alpha',            desc: 'Low gravity, high security.',                  hp: 2e14 },
     { name: 'Global Meme Reserve',        desc: 'Backing every meme since 1999.',               hp: 1.5e16 },
     { name: 'Mars Colony Network',        desc: 'Ping: 14 minutes.',                            hp: 1.2e18 },
-    { name: 'The Simulation',             desc: 'Root access to everything. Please be nice.',   hp: 1e20 },
+    { name: 'The Simulation',             desc: 'Wake up. Then keep going.',                    hp: 1e20 },
+    { name: 'Alien Mothership',           desc: 'Somehow it still runs Windows 95.',            hp: 8e21 },
+    { name: 'Time Travel Agency',         desc: 'Bookings for yesterday only.',                 hp: 7e23 },
+    { name: 'Parallel Universe Bank',     desc: 'Your evil twin has savings.',                  hp: 6e25 },
+    { name: 'Galactic Federation Wi-Fi',  desc: 'The password is 42.',                          hp: 5e27 },
+    { name: 'The Source Code',            desc: 'The code that runs all the other code.',       hp: 4e29 },
+    { name: 'The Game Developer',         desc: 'Hack the person who made this game.',          hp: 3e31 },
   ];
   const LOOT_RATIO = 0.5;
   const BREACH_BONUS = 0.1;
@@ -63,12 +97,15 @@
     { id: 'ks3', kind: 'clickPct', value: 0.02, cost: 5e8,  name: 'Overclocked Fingers',   desc: 'Keystrokes earn another 2% of per-second income.' },
     { id: 'ks4', kind: 'clickPct', value: 0.02, cost: 5e10, name: 'Hive-Mind Typing',      desc: 'Keystrokes earn another 2% of per-second income.' },
     { id: 'ks5', kind: 'clickPct', value: 0.04, cost: 5e12, name: 'Telepathic Shell',      desc: 'Keystrokes earn another 4% of per-second income.' },
+    { id: 'ks6', kind: 'clickPct', value: 0.05, cost: 5e15, name: 'Brainwave Compiler',    desc: 'Keystrokes earn another 5% of per-second income.' },
     { id: 'g1', kind: 'global', value: 1.1,  cost: 2e4,  name: 'Dark Mode IDE',              desc: 'All income +10%.' },
     { id: 'g2', kind: 'global', value: 1.15, cost: 2e6,  name: 'Triple Monitor Setup',       desc: 'All income +15%.' },
     { id: 'g3', kind: 'global', value: 1.2,  cost: 2e8,  name: 'Server Room Mini Fridge',    desc: 'All income +20%.' },
     { id: 'g4', kind: 'global', value: 1.25, cost: 2e10, name: 'Private Island Data Center', desc: 'All income +25%.' },
     { id: 'g5', kind: 'global', value: 1.3,  cost: 2e12, name: 'Orbital Cooling Array',      desc: 'All income +30%.' },
     { id: 'g6', kind: 'global', value: 1.5,  cost: 2e14, name: 'Dyson Sphere Power Supply',  desc: 'All income +50%.' },
+    { id: 'g7', kind: 'global', value: 1.5,  cost: 2e17, name: 'Wormhole Fiber Line',        desc: 'All income +50%.' },
+    { id: 'g8', kind: 'global', value: 2,    cost: 2e20, name: 'Infinite Coffee Machine',    desc: 'All income ×2.' },
     { id: 'p1', kind: 'packetRate',  cost: 5e4, name: 'Packet Sniffer', desc: 'Data packets show up twice as often.' },
     { id: 'p2', kind: 'packetPower', cost: 5e6, name: 'Packet Magnet',  desc: 'Data packet rewards ×2.' },
     { id: 't1', kind: 'traceTime',   cost: 2e5, name: 'Log Scrubber',   desc: 'Traces give you 12 seconds instead of 8.' },
@@ -100,7 +137,8 @@
     ['m40',    'Fully Loaded',          'Install 40 mods.',                      () => ownedMods.size >= 40],
     ['t1',     'Access Granted',        'Breach your first target.',             () => s.breached >= 1],
     ['t6',     'Halfway In',            'Breach 6 targets in one run.',          () => s.breached >= 6],
-    ['t12',    'Game Over, Man',        'Breach The Simulation.',                () => s.breached >= TARGETS.length],
+    ['t12',    'Game Over, Man',        'Breach The Simulation.',                () => s.breached >= 12],
+    ['t18',    'Fourth Wall Breaker',   'Breach The Game Developer.',            () => s.breached >= TARGETS.length],
     ['p1',     'Packet Catcher',        'Grab a data packet.',                   () => s.stats.packets >= 1],
     ['p25',    'Packet Hoarder',        'Grab 25 data packets.',                 () => s.stats.packets >= 25],
     ['tr1',    'Clean Getaway',         'Purge your logs before a trace ends.',  () => s.stats.tracesEvaded >= 1],
@@ -188,6 +226,7 @@ sudo make me_a_sandwich
   function fmtTime(sec) {
     sec = Math.max(0, Math.floor(sec));
     const d = Math.floor(sec / 86400), h = Math.floor(sec / 3600) % 24, m = Math.floor(sec / 60) % 60, s2 = sec % 60;
+    if (d >= 365) return `${fmt(d / 365)} years`;
     if (d) return `${d}d ${h}h`;
     if (h) return `${h}h ${m}m`;
     if (m) return `${m}m ${s2}s`;
@@ -548,27 +587,87 @@ sudo make me_a_sandwich
   })();
 
   // ---------- Terminal ----------
-  let termBuf = '';
+  // The terminal holds colored segments: your typing, your rigs' typing,
+  // rig chatter, and system messages.
+  let termSegs = [];
+  let termLen = 0;
   let termDirty = true;
   let codeIdx = 0;
-  function termWrite(str) {
-    termBuf += str;
-    if (termBuf.length > 4000) termBuf = termBuf.slice(-3000);
+  const TERM_MAX = 4000;
+  const TERM_KEEP = 3000;
+  function termWrite(str, cls) {
+    cls = cls || 'sys';
+    const last = termSegs[termSegs.length - 1];
+    if (last && last.c === cls) last.t += str;
+    else termSegs.push({ t: str, c: cls });
+    termLen += str.length;
+    if (termLen > TERM_MAX) {
+      let excess = termLen - TERM_KEEP;
+      while (excess > 0 && termSegs.length) {
+        const first = termSegs[0];
+        if (first.t.length <= excess) { excess -= first.t.length; termLen -= first.t.length; termSegs.shift(); }
+        else { first.t = first.t.slice(excess); termLen -= excess; excess = 0; }
+      }
+    }
     termDirty = true;
   }
-  function typeCode() {
-    const n = 3 + Math.floor(Math.random() * 4);
+  function termClear() { termSegs = []; termLen = 0; termDirty = true; }
+
+  function nextCode(n) {
     let chunk = '';
     for (let i = 0; i < n; i++) {
       chunk += CODE[codeIdx];
       codeIdx = (codeIdx + 1) % CODE.length;
     }
-    termWrite(chunk);
+    return chunk;
   }
+
+  // Characters typed per keystroke grow with how much each keystroke earns.
+  function keyChars() {
+    const scale = 1 + 1.5 * Math.log10(Math.max(1, D.click));
+    return Math.min(400, Math.round((3 + Math.random() * 3) * scale));
+  }
+  // Characters your rigs type per second grow with your income.
+  function rigCharsPerSec() {
+    return D.cps > 0 ? Math.min(240, 5 + 12 * Math.log10(1 + D.cps)) : 0;
+  }
+
+  let autoChars = 0;
+  let nextChatter = 0;
+  function rigTyping(dt) {
+    if (D.cps <= 0) return;
+    autoChars += rigCharsPerSec() * Math.min(dt, 1);
+    if (autoChars >= 1) {
+      const n = Math.floor(autoChars);
+      autoChars -= n;
+      termWrite(nextCode(n), 'rig');
+    }
+    const now = Date.now();
+    if (now >= nextChatter) {
+      nextChatter = now + rand(2500, 5000);
+      const owned = RIGS.filter(r => (s.rigs[r.id] || 0) > 0);
+      if (owned.length) {
+        const r = owned[Math.floor(Math.random() * owned.length)];
+        const lines = CHATTER[r.id];
+        const num = 1 + Math.floor(Math.random() * s.rigs[r.id]);
+        termWrite(`\n[${r.id}-${num}] ${lines[Math.floor(Math.random() * lines.length)]}\n`, 'chat');
+      }
+    }
+  }
+
   function renderTerminal() {
     if (!termDirty) return;
     termDirty = false;
-    $('#termOut').textContent = termBuf;
+    const out = $('#termOut');
+    const frag = document.createDocumentFragment();
+    for (const seg of termSegs) {
+      const span = document.createElement('span');
+      span.className = 't-' + seg.c;
+      span.textContent = seg.t;
+      frag.appendChild(span);
+    }
+    out.textContent = '';
+    out.appendChild(frag);
     const term = $('#terminal');
     term.scrollTop = term.scrollHeight;
   }
@@ -579,12 +678,11 @@ sudo make me_a_sandwich
     const v = D.click;
     earn(v);
     hack(v);
-    typeCode();
+    termWrite(nextCode(keyChars()), 'you');
     sfx.key();
     pressHackBtn();
     scheduleKeyRender();
     if (x != null) floater(x, y, '+' + money(v, true));
-    if (s.keystrokes === 1) setText($('#termHint'), 'Keep typing. Buy rigs to earn while idle.');
   }
 
   // Update the wallet and terminal on the next frame after each keystroke,
@@ -923,6 +1021,10 @@ sudo make me_a_sandwich
 
   function renderSlow() {
     renderMods();
+    if (s.keystrokes > 0 || D.cps > 0) {
+      const rigText = D.cps > 0 ? ` · rigs type ${Math.round(rigCharsPerSec())}/s` : '';
+      setText($('#termHint'), `You type ~${Math.round(4.5 * (1 + 1.5 * Math.log10(Math.max(1, D.click))))} chars/key${rigText}`);
+    }
     STATS.forEach(([, fn], i) => setText(statEls[i], fn()));
 
     const gain = pendingTokens();
@@ -1053,7 +1155,7 @@ sudo make me_a_sandwich
       recalc();
       hidePacket();
       if (trace.active) endTrace();
-      termBuf = '';
+      termClear();
       termWrite(BOOT_TEXT);
       $('#log').textContent = '';
       addLog('Save wiped. Fresh start.');
@@ -1137,6 +1239,7 @@ sudo make me_a_sandwich
     const gain = D.cps * dt;
     if (gain > 0) { earn(gain); hack(gain); }
     s.stats.playTime += dt;
+    if (!document.hidden) rigTyping(dt);
 
     if (document.hidden || !$('#welcome').hidden) {
       // Pause events while nobody is watching.
