@@ -35,6 +35,7 @@
           <span class="label">Current target</span>
           <span class="label" id="targetTier">1 / 12</span>
         </div>
+        <ol class="route" id="route" aria-label="Target route"></ol>
         <div class="target-name" id="targetName">Neighbor's Wi-Fi</div>
         <div class="target-desc" id="targetDesc"></div>
         <div class="bar" id="targetBarWrap" role="progressbar" aria-label="Firewall breach progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -47,9 +48,9 @@
         <div class="target-reward" id="targetReward"></div>
       </div>
 
-      <div class="panel">
-        <div class="panel-head">
-          <span class="label">Terminal</span>
+      <div class="panel term-panel">
+        <div class="term-bar">
+          <span class="term-title">root@basement:~/hacks</span>
           <span class="hint" id="termHint">Type on your keyboard or tap here</span>
         </div>
         <div class="terminal" id="terminal" aria-label="Terminal. Type or tap to hack."><pre><span id="termOut"></span><span class="cursor">&#9608;</span></pre></div>
@@ -148,6 +149,12 @@
     <p id="welcomeText"></p>
     <button class="hack-btn" id="welcomeOk" type="button">Collect</button>
   </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<div class="stamp" id="stamp" aria-hidden="true" hidden>
+  <div class="stamp-box"><span class="stamp-main">Access granted</span><span class="stamp-sub" id="stampSub"></span></div>
 </div>
 
 <div class="floaters" id="floaters" aria-hidden="true"></div>

@@ -9,18 +9,18 @@
   const COIN = '₿';
 
   const RIGS = [
-    { id: 'kiddie',  name: 'Script Kiddie',          desc: 'Copies code from forums and hopes for the best.', cost: 15,     rate: 0.1 },
-    { id: 'toaster', name: 'Zombie Toaster',         desc: 'A smart toaster that now works for you.',         cost: 100,    rate: 1 },
-    { id: 'hamster', name: 'Proxy Hamster Wheel',    desc: 'Routes your traffic through very tired hamsters.', cost: 1100,  rate: 8 },
-    { id: 'miner',   name: 'Crypto Miner Rig',       desc: 'Heats the basement. Prints coins.',               cost: 12000,  rate: 47 },
-    { id: 'spam',    name: 'Spam Cannon',            desc: '"Congratulations, you have won a free yacht."',    cost: 130000, rate: 260 },
-    { id: 'vending', name: 'Glitch Vending Machine', desc: 'Insert coin, receive a mystery bug.',             cost: 1.4e6,  rate: 1400 },
-    { id: 'worm',    name: 'AI Worm',                desc: 'Writes its own code. Has opinions.',              cost: 2e7,    rate: 7800 },
-    { id: 'bazaar',  name: 'Midnight Bazaar',        desc: 'A marketplace that only opens after 3 a.m.',      cost: 3.3e8,  rate: 44000 },
-    { id: 'uplink',  name: 'Satellite Uplink',       desc: 'Your Wi-Fi now has an orbit.',                    cost: 5.1e9,  rate: 260000 },
-    { id: 'quantum', name: 'Quantum Guesser',        desc: 'Tries every password at once. Sort of.',          cost: 7.5e10, rate: 1.6e6 },
-    { id: 'core',    name: 'Rogue AI Core',          desc: 'Insists it is "just helping".',                   cost: 1e12,   rate: 1e7 },
-    { id: 'root',    name: 'Simulation Root Access', desc: 'You found the admin panel of the universe.',      cost: 1.4e13, rate: 6.5e7 },
+    { id: 'kiddie', icon: '>_',  name: 'Script Kiddie',          desc: 'Copies code from forums and hopes for the best.', cost: 15,     rate: 0.1 },
+    { id: 'toaster', icon: '[=]', name: 'Zombie Toaster',         desc: 'A smart toaster that now works for you.',         cost: 100,    rate: 1 },
+    { id: 'hamster', icon: '(@)', name: 'Proxy Hamster Wheel',    desc: 'Routes your traffic through very tired hamsters.', cost: 1100,  rate: 8 },
+    { id: 'miner', icon: '|$|',   name: 'Crypto Miner Rig',       desc: 'Heats the basement. Prints coins.',               cost: 12000,  rate: 47 },
+    { id: 'spam', icon: '<<!',    name: 'Spam Cannon',            desc: '"Congratulations, you have won a free yacht."',    cost: 130000, rate: 260 },
+    { id: 'vending', icon: '[?]', name: 'Glitch Vending Machine', desc: 'Insert coin, receive a mystery bug.',             cost: 1.4e6,  rate: 1400 },
+    { id: 'worm', icon: 'S~>',    name: 'AI Worm',                desc: 'Writes its own code. Has opinions.',              cost: 2e7,    rate: 7800 },
+    { id: 'bazaar', icon: '%$%',  name: 'Midnight Bazaar',        desc: 'A marketplace that only opens after 3 a.m.',      cost: 3.3e8,  rate: 44000 },
+    { id: 'uplink', icon: '-o-',  name: 'Satellite Uplink',       desc: 'Your Wi-Fi now has an orbit.',                    cost: 5.1e9,  rate: 260000 },
+    { id: 'quantum', icon: '|ψ>', name: 'Quantum Guesser',        desc: 'Tries every password at once. Sort of.',          cost: 7.5e10, rate: 1.6e6 },
+    { id: 'core', icon: '<AI>',    name: 'Rogue AI Core',          desc: 'Insists it is "just helping".',                   cost: 1e12,   rate: 1e7 },
+    { id: 'root', icon: '#!/',    name: 'Simulation Root Access', desc: 'You found the admin panel of the universe.',      cost: 1.4e13, rate: 6.5e7 },
   ];
   const RIG_BY_ID = Object.fromEntries(RIGS.map(r => [r.id, r]));
 
@@ -326,6 +326,7 @@ sudo make me_a_sandwich
     recalc();
     termWrite(`\n\n*** ACCESS GRANTED: ${t.name.toUpperCase()} ***\n*** looted ${money(loot)} ***\n\n`);
     addLog(`Breached ${t.name}. Looted ${money(loot)} and income is now +${Math.round(s.breached * BREACH_BONUS * 100)}% from breaches.`, 'gold');
+    showStamp(`${t.name} · +${money(loot)}`);
     sfx.breach();
   }
 
@@ -356,7 +357,8 @@ sudo make me_a_sandwich
     s.rigs[r.id] = (s.rigs[r.id] || 0) + n;
     recalc();
     sfx.buy();
-    if (first) addLog(`New rig online: ${r.name}.`);
+    flashEl(rigEls[r.id].b);
+    if (first) { addLog(`New rig online: ${r.name}.`); toast('New rig online', r.name); }
     renderFast();
     renderSlow();
   }
@@ -373,6 +375,7 @@ sudo make me_a_sandwich
     recalc();
     sfx.buy();
     addLog(`Installed ${m.name}.`);
+    toast('Mod installed', m.name);
     if (m.kind === 'packetRate' && !packet.active) schedulePacket();
     renderFast();
     renderSlow();
@@ -395,6 +398,7 @@ sudo make me_a_sandwich
     if (trace.active) endTrace();
     termWrite(`\n\n>>> GOING DARK... identity wiped.\n>>> ghost tokens: ${fmt(s.ghost)}\n\n`);
     addLog(`You went dark and earned ${fmt(gain)} ghost tokens. All income is now +${fmt(s.ghost * 10)}%.`, 'good');
+    toast('You went dark', `+${fmt(gain)} ghost tokens`, 'good');
     sfx.breach();
     save();
     renderFast();
@@ -452,6 +456,7 @@ sudo make me_a_sandwich
     const x = ev && ev.clientX ? ev.clientX : window.innerWidth / 2;
     const y = ev && ev.clientY ? ev.clientY : window.innerHeight / 2;
     floater(x, y, text, 'good');
+    toast('Data packet', text, 'good');
     sfx.buy();
     renderFast();
   }
@@ -499,6 +504,7 @@ sudo make me_a_sandwich
         s.trophies.push(t.id);
         changed = true;
         addLog(`Trophy unlocked: ${t.name}. Income +2%.`, 'gold');
+        toast('Trophy unlocked', `${t.name} · income +2%`, 'gold');
       }
     }
     if (changed) { recalc(); renderTrophies(); }
@@ -575,8 +581,17 @@ sudo make me_a_sandwich
     hack(v);
     typeCode();
     sfx.key();
+    pressHackBtn();
     if (x != null) floater(x, y, '+' + money(v, true));
     if (s.keystrokes === 1) setText($('#termHint'), 'Keep typing. Buy rigs to earn while idle.');
+  }
+
+  let pressTimer = null;
+  function pressHackBtn() {
+    const b = $('#hackBtn');
+    b.classList.add('pressed');
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(() => b.classList.remove('pressed'), 70);
   }
 
   function floater(x, y, text, cls) {
@@ -589,6 +604,58 @@ sudo make me_a_sandwich
     el.style.top = y + 'px';
     layer.appendChild(el);
     setTimeout(() => el.remove(), 900);
+  }
+
+  // ---------- Feedback: toasts, stamp, flashes ----------
+  let quiet = true; // no stamps or toasts while restoring a save
+  function toast(title, body, cls) {
+    if (quiet) return;
+    const box = $('#toasts');
+    while (box.childElementCount >= 4) box.firstElementChild.remove();
+    const el = document.createElement('div');
+    el.className = 'toast' + (cls ? ' ' + cls : '');
+    const t = document.createElement('strong'); t.textContent = title;
+    const b = document.createElement('span'); b.textContent = body;
+    el.append(t, b);
+    box.appendChild(el);
+    setTimeout(() => el.classList.add('out'), 3200);
+    setTimeout(() => el.remove(), 3600);
+  }
+
+  let stampTimer = null;
+  function showStamp(sub) {
+    if (quiet) return;
+    const st = $('#stamp');
+    $('#stampSub').textContent = sub;
+    st.hidden = true;
+    void st.offsetWidth; // restart the animation
+    st.hidden = false;
+    clearTimeout(stampTimer);
+    stampTimer = setTimeout(() => { st.hidden = true; }, 1700);
+  }
+
+  function flashEl(el) {
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+  }
+
+  const routeEls = [];
+  function buildRoute() {
+    const ol = $('#route');
+    ol.textContent = '';
+    TARGETS.forEach(t => {
+      const li = document.createElement('li');
+      li.title = t.name;
+      ol.appendChild(li);
+      routeEls.push(li);
+    });
+  }
+  function renderRoute() {
+    routeEls.forEach((li, i) => {
+      const cls = i < s.breached ? 'done' : i === s.breached ? 'now' : '';
+      if (li.className !== cls) li.className = cls;
+    });
   }
 
   // ---------- Log ----------
@@ -627,14 +694,23 @@ sudo make me_a_sandwich
       meta.append(cost, rate);
       info.append(name, desc, meta);
       const owned = document.createElement('span'); owned.className = 'rig-owned';
-      b.append(info, owned);
+      const icon = document.createElement('span'); icon.className = 'rig-icon'; icon.setAttribute('aria-hidden', 'true');
+      const prog = document.createElement('span'); prog.className = 'rig-prog'; prog.setAttribute('aria-hidden', 'true');
+      b.append(icon, info, owned, prog);
       b.addEventListener('click', () => buyRig(r));
       li.appendChild(b);
       ul.appendChild(li);
-      rigEls[r.id] = { li, b, name, desc, cost, rate, owned };
+      rigEls[r.id] = { li, b, icon, name, desc, cost, rate, owned, prog };
     }
   }
 
+  const MOD_TAGS = {
+    rig: { label: 'Rig ×2', cls: 'rig' },
+    clickMult: { label: 'Keys', cls: 'keys' },
+    clickPct: { label: 'Keys', cls: 'keys' },
+    global: { label: 'All income', cls: 'all' },
+    event: { label: 'Events', cls: 'event' },
+  };
   let modsKey = '';
   let modEls = [];
   function renderMods() {
@@ -649,16 +725,19 @@ sudo make me_a_sandwich
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'mod';
-        const info = document.createElement('span'); info.className = 'mod-info';
+        const tag = document.createElement('span');
+        const kind = MOD_TAGS[m.kind] || MOD_TAGS.event;
+        tag.className = 'mod-tag tag-' + kind.cls;
+        tag.textContent = m.kind === 'rig' ? RIG_BY_ID[m.rig].icon + ' ' + kind.label : kind.label;
         const name = document.createElement('span'); name.className = 'mod-name'; name.textContent = m.name;
         const desc = document.createElement('span'); desc.className = 'mod-desc'; desc.textContent = m.desc;
-        info.append(name, desc);
         const cost = document.createElement('span'); cost.className = 'mod-cost'; cost.textContent = money(m.cost);
-        b.append(info, cost);
+        const prog = document.createElement('span'); prog.className = 'rig-prog'; prog.setAttribute('aria-hidden', 'true');
+        b.append(tag, name, desc, cost, prog);
         b.addEventListener('click', () => buyMod(m));
         li.appendChild(b);
         ul.appendChild(li);
-        return { m, b };
+        return { m, b, prog };
       });
       $('#modsEmpty').hidden = avail.length > 0;
 
@@ -723,8 +802,13 @@ sudo make me_a_sandwich
   }
 
   // ---------- UI: render ----------
+  let shownBank = 0;
   function renderFast() {
-    setText($('#bank'), money(s.bank));
+    // Count the wallet up smoothly; drop instantly when spending.
+    if (s.bank <= shownBank || s.bank - shownBank < 1) shownBank = s.bank;
+    else shownBank += (s.bank - shownBank) * 0.35;
+    setText($('#bank'), money(shownBank));
+    renderRoute();
     setText($('#cps'), money(D.cps, true));
     setText($('#kps'), money(D.click, true));
     setText($('#hackBtnVal'), '+' + money(D.click, true));
@@ -765,29 +849,35 @@ sudo make me_a_sandwich
       if (i === maxIdx + 2) {
         el.b.classList.add('locked');
         el.b.disabled = true;
+        setText(el.icon, '??');
         setText(el.name, '???');
         setText(el.desc, `Buy a ${RIGS[i - 1].name} to reveal this rig.`);
         setText(el.cost, '');
         setText(el.rate, '');
         setText(el.owned, '');
+        el.prog.style.width = '0%';
         return;
       }
       el.b.classList.remove('locked');
       const plan = buyPlan(r);
       el.b.disabled = !plan.ok;
+      setText(el.icon, r.icon);
       setText(el.name, r.name);
       setText(el.desc, r.desc);
       setText(el.cost, `${plan.n > 1 ? 'Buy ' + plan.n + ': ' : ''}${money(plan.cost)}`);
       const rate = D.rigRate[r.id] || 0;
-      setText(el.rate, owned ? `+${money(rate, true)}/s each, ${money(rate * owned, true)}/s total` : `+${money(rate, true)}/s each`);
+      const share = D.baseCps > 0 ? Math.round((rate * owned / D.baseCps) * 100) : 0;
+      setText(el.rate, owned ? `+${money(rate, true)}/s each · ${money(rate * owned, true)}/s total · ${share}% of income` : `+${money(rate, true)}/s each`);
       setText(el.owned, String(owned));
+      el.prog.style.width = (Math.min(1, s.bank / plan.cost) * 100).toFixed(1) + '%';
     });
 
     // Mods affordability
     let affordable = 0;
-    for (const { m, b } of modEls) {
+    for (const { m, b, prog } of modEls) {
       const ok = s.bank >= m.cost;
       b.disabled = !ok;
+      prog.style.width = (Math.min(1, s.bank / m.cost) * 100).toFixed(1) + '%';
       if (ok) affordable += 1;
     }
     const badge = $('#modsBadge');
@@ -1055,6 +1145,7 @@ sudo make me_a_sandwich
     recalc();
 
     buildRigs();
+    buildRoute();
     buildTrophies();
     buildStats();
     bindEvents();
@@ -1093,9 +1184,16 @@ sudo make me_a_sandwich
       try { hot.snapshot(() => serialize()); } catch (e) { /* ignore */ }
     }
 
+    // Keep the sticky shop panel and toasts clear of the header.
+    const syncHeader = () => document.documentElement.style.setProperty('--hdr', $('.topbar').offsetHeight + 'px');
+    syncHeader();
+    window.addEventListener('resize', syncHeader);
+
     last = Date.now();
+    shownBank = s.bank;
     renderFast();
     renderSlow();
+    quiet = false;
     setInterval(tick, 100);
   }
 
