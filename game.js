@@ -1320,6 +1320,39 @@ sudo make me_a_sandwich
     }));
   }
 
+  // Erase every bit of progress: run, ghost tokens, perks, trophies, stats,
+  // settings and the admin multipliers. Starts the game as if brand new.
+  function resetEverything() {
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* ignore */ }
+    s = defaultState();
+    ownedMods = new Set();
+    buffs = [];
+    admin.speed = 1;
+    admin.mult = 1;
+    modsKey = '';
+    darkNotified = false;
+    autoChars = 0;
+    recalc();
+    shownBank = 0;
+    hidePacket();
+    if (trace.active) endTrace();
+    $('#welcome').hidden = true;
+    toggleAdmin(false);
+    termClear();
+    termWrite(BOOT_TEXT);
+    $('#log').textContent = '';
+    addLog('Everything was reset. Fresh start.');
+    toast('Reset complete', 'All progress erased');
+    renderTrophies();
+    renderBuyAmt();
+    renderSound();
+    renderAdmin();
+    selectTab('rigs');
+    renderFast();
+    renderSlow();
+    save();
+  }
+
   function bindEvents() {
     bindAdmin();
     document.addEventListener('keydown', e => {
@@ -1382,27 +1415,8 @@ sudo make me_a_sandwich
     $('#welcomeOk').addEventListener('click', () => { $('#welcome').hidden = true; });
 
     armButton($('#goDarkBtn'), 'Click again to go dark', goDark);
-    armButton($('#wipeBtn'), 'Click again to wipe everything', () => {
-      try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* ignore */ }
-      s = defaultState();
-      ownedMods = new Set();
-      buffs = [];
-      modsKey = '';
-      recalc();
-      hidePacket();
-      if (trace.active) endTrace();
-      termClear();
-      termWrite(BOOT_TEXT);
-      $('#log').textContent = '';
-      addLog('Save wiped. Fresh start.');
-      renderTrophies();
-      renderBuyAmt();
-      renderSound();
-      selectTab('rigs');
-      renderFast();
-      renderSlow();
-      save();
-    });
+    armButton($('#wipeBtn'), 'Click again to erase all progress', resetEverything);
+    armButton($('#adminResetBtn'), 'Click again to erase all progress', resetEverything);
 
     $('#exportBtn').addEventListener('click', () => {
       const code = encodeSave();

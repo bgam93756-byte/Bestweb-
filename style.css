@@ -742,3 +742,17 @@ textarea {
 .admin-row .chip:active { background: var(--amber); color: var(--on-amber); }
 .admin-row .chip[aria-pressed="true"] { border-color: var(--red); color: var(--red); }
 .buff.admin { border-color: var(--red); color: var(--red); }
+.admin-danger {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--red);
+}
+.admin-danger h3 { margin: 0 0 2px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--red); }
+.admin-danger p { margin: 0; font-size: 12px; color: var(--muted); max-width: 52ch; }
+.danger-btn.admin-reset { border-color: var(--red); color: var(--red); font-size: 22px; }
+.danger-btn.admin-reset[data-armed="1"] { background: var(--red); color: var(--on-amber); }

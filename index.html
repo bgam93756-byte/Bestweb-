@@ -132,7 +132,7 @@
         <div class="save-row">
           <button type="button" class="chip" id="exportBtn">Export save code</button>
           <button type="button" class="chip" id="importBtn">Load save code</button>
-          <button type="button" class="chip danger" id="wipeBtn">Wipe save</button>
+          <button type="button" class="chip danger" id="wipeBtn">Reset everything</button>
         </div>
         <label class="label" for="saveText">Save code</label>
         <textarea id="saveText" rows="4" spellcheck="false" placeholder="Paste a save code here, then press Load save code."></textarea>
@@ -203,6 +203,13 @@
         <h3>Income multiplier</h3>
         <div class="admin-row" role="group" aria-label="Income multiplier"><button type="button" class="chip" data-mult="1" aria-pressed="true">×1</button><button type="button" class="chip" data-mult="10" aria-pressed="false">×10</button><button type="button" class="chip" data-mult="1000" aria-pressed="false">×1,000</button><button type="button" class="chip" data-mult="1000000" aria-pressed="false">×1M</button></div>
       </section>
+    </div>
+    <div class="admin-danger">
+      <div>
+        <h3>Reset everything</h3>
+        <p>Erases your whole save: wallet, rigs, mods, targets, ghost tokens, perks, trophies and stats. This can't be undone.</p>
+      </div>
+      <button type="button" class="danger-btn admin-reset" id="adminResetBtn">Reset everything</button>
     </div>
   </div>
 </div>
