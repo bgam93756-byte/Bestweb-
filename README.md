@@ -20,6 +20,7 @@ To host it, push the repo to GitHub and turn on **Settings → Pages** for the d
 - **Traces:** once you're earning, a sysadmin sometimes starts tracing you. Press **Purge logs** before the timer runs out or you lose 5% of your wallet.
 - **Prestige (go dark):** reset your run for ghost tokens based on your lifetime earnings. Every token gives +10% to everything, forever. Spend tokens on 18 permanent ghost perks, such as starting cash, auto-clickers, rig discounts, triple loot, the Skeleton Key and Root Kit (all income ×3). Spending tokens never lowers their bonus.
 - **Trophies:** 34 achievements, each worth +2% income.
+- **Admin menu:** press the red **Admin** button in the header or the backtick key (`` ` ``) for cheats: add money, tokens and rigs, install every mod, unlock perks and trophies, breach targets, spawn packets and traces, skip time, and change game speed (up to ×100) or income (up to ×1M). The speed and income multipliers reset when you reload.
 - **Saving:** the game autosaves to your browser every 10 seconds and pays out offline earnings for up to 8 hours. Under **System** you can export a save code and load it on another device.
 
 ## Files

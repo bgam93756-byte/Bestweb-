@@ -23,7 +23,10 @@
       <div class="readout"><span class="label">Per second</span><span class="value" id="cps">₿0</span></div>
       <div class="readout"><span class="label">Per key</span><span class="value" id="kps">₿1</span></div>
     </div>
-    <button id="soundBtn" class="chip" type="button" aria-pressed="false">Sound off</button>
+    <div class="top-actions">
+      <button id="adminBtn" class="chip admin-chip" type="button">Admin</button>
+      <button id="soundBtn" class="chip" type="button" aria-pressed="false">Sound off</button>
+    </div>
   </header>
 
   <div class="buffs" id="buffs" aria-live="polite"></div>
@@ -157,6 +160,50 @@
     <h2 id="welcomeTitle">Welcome back</h2>
     <p id="welcomeText"></p>
     <button class="hack-btn" id="welcomeOk" type="button">Collect</button>
+  </div>
+</div>
+
+<div class="modal" id="admin" hidden>
+  <div class="modal-box admin-box" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+    <div class="admin-head">
+      <h2 id="adminTitle">Admin menu</h2>
+      <button type="button" class="chip" id="adminClose">Close</button>
+    </div>
+    <p class="tab-intro">Cheats for testing and fun. Press <kbd>`</kbd> to open or close this menu, or <kbd>Esc</kbd> to close it. Speed and income multipliers reset when you reload.</p>
+    <div class="admin-grid">
+      <section class="admin-sec">
+        <h3>Money</h3>
+        <div class="admin-row"><button type="button" class="chip" data-admin="cash3">+₿1K</button><button type="button" class="chip" data-admin="cash6">+₿1M</button><button type="button" class="chip" data-admin="cash9">+₿1B</button><button type="button" class="chip" data-admin="cash12">+₿1T</button><button type="button" class="chip" data-admin="cash15">+₿1Qa</button><button type="button" class="chip" data-admin="cashx10">Wallet ×10</button></div>
+      </section>
+      <section class="admin-sec">
+        <h3>Prestige</h3>
+        <div class="admin-row"><button type="button" class="chip" data-admin="tok10">+10 tokens</button><button type="button" class="chip" data-admin="tok100">+100 tokens</button><button type="button" class="chip" data-admin="tok1000">+1,000 tokens</button><button type="button" class="chip" data-admin="allperks">Unlock all perks</button></div>
+      </section>
+      <section class="admin-sec">
+        <h3>Rigs, mods and trophies</h3>
+        <div class="admin-row"><button type="button" class="chip" data-admin="rigs10">+10 of every rig</button><button type="button" class="chip" data-admin="rigs100">+100 of every rig</button><button type="button" class="chip" data-admin="allmods">Install all mods</button><button type="button" class="chip" data-admin="alltrophies">Unlock all trophies</button></div>
+      </section>
+      <section class="admin-sec">
+        <h3>Targets</h3>
+        <div class="admin-row"><button type="button" class="chip" data-admin="breach1">Breach current target</button><button type="button" class="chip" data-admin="breachall">Breach every target</button><button type="button" class="chip" data-admin="resetrun">Restart run</button></div>
+      </section>
+      <section class="admin-sec">
+        <h3>Events</h3>
+        <div class="admin-row"><button type="button" class="chip" data-admin="packet">Spawn data packet</button><button type="button" class="chip" data-admin="trace">Start a trace</button><button type="button" class="chip" data-admin="overclock">Overclock 60s</button><button type="button" class="chip" data-admin="frenzy">Frenzy 60s</button></div>
+      </section>
+      <section class="admin-sec">
+        <h3>Time warp</h3>
+        <div class="admin-row"><button type="button" class="chip" data-admin="warp1h">Skip 1 hour</button><button type="button" class="chip" data-admin="warp1d">Skip 1 day</button><button type="button" class="chip" data-admin="warp1w">Skip 1 week</button></div>
+      </section>
+      <section class="admin-sec">
+        <h3>Game speed</h3>
+        <div class="admin-row" role="group" aria-label="Game speed"><button type="button" class="chip" data-speed="1" aria-pressed="true">×1</button><button type="button" class="chip" data-speed="2" aria-pressed="false">×2</button><button type="button" class="chip" data-speed="10" aria-pressed="false">×10</button><button type="button" class="chip" data-speed="100" aria-pressed="false">×100</button></div>
+      </section>
+      <section class="admin-sec">
+        <h3>Income multiplier</h3>
+        <div class="admin-row" role="group" aria-label="Income multiplier"><button type="button" class="chip" data-mult="1" aria-pressed="true">×1</button><button type="button" class="chip" data-mult="10" aria-pressed="false">×10</button><button type="button" class="chip" data-mult="1000" aria-pressed="false">×1,000</button><button type="button" class="chip" data-mult="1000000" aria-pressed="false">×1M</button></div>
+      </section>
+    </div>
   </div>
 </div>
 

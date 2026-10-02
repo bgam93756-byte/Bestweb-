@@ -295,6 +295,7 @@ sudo make me_a_sandwich
       ghost: 0,
       ghostSpent: 0,
       perks: [],
+      adminUsed: false,
       trophies: [],
       stats: { packets: 0, tracesEvaded: 0, tracesFailed: 0, prestiges: 0, bestCps: 0, totalBreached: 0, playTime: 0, started: Date.now() },
       settings: { sound: false, buyAmt: 1, tab: 'rigs' },
@@ -358,6 +359,7 @@ sudo make me_a_sandwich
   // ---------- Economy ----------
   const buffActive = id => buffs.some(b => b.id === id && b.until > Date.now());
   const hasPerk = id => s.perks.includes(id);
+  const admin = { speed: 1, mult: 1 }; // admin menu settings, not saved
   const tokenBonus = () => (hasPerk('p_ghost') ? 0.12 : 0.1);
   const rigDiscount = () => (hasPerk('p_cheap') ? 0.9 : 1) * (hasPerk('p_cheap2') ? 0.9 : 1);
   const offlineCap = () => (hasPerk('p_offline') ? 24 : 8) * 3600;
@@ -380,6 +382,7 @@ sudo make me_a_sandwich
     }
     mult *= 1 + tokenBonus() * s.ghost;
     if (hasPerk('p_rootkit')) mult *= 3;
+    mult *= admin.mult;
     if (hasPerk('p_keys')) clickMult *= 3;
     mult *= 1 + 0.02 * s.trophies.length;
     mult *= 1 + BREACH_BONUS * s.breached;
@@ -1035,6 +1038,7 @@ sudo make me_a_sandwich
     ['Times gone dark',       () => fmt(s.stats.prestiges)],
     ['Total income multiplier', () => '×' + fmt(D.mult, true)],
     ['Play time',             () => fmtTime(s.stats.playTime)],
+    ['Admin menu used',       () => (s.adminUsed ? 'Yes' : 'No')],
   ];
   const statEls = [];
   function buildStats() {
@@ -1135,13 +1139,15 @@ sudo make me_a_sandwich
     const now = Date.now();
     const buffBox = $('#buffs');
     const buffText = buffs.filter(b => b.until > now).map(b => `${b.label} · ${Math.ceil((b.until - now) / 1000)}s`);
+    if (admin.speed !== 1) buffText.push(`Admin: speed ×${admin.speed}`);
+    if (admin.mult !== 1) buffText.push(`Admin: income ×${fmt(admin.mult)}`);
     const key = buffText.join('|');
     if (buffBox._k !== key) {
       buffBox._k = key;
       buffBox.textContent = '';
       buffText.forEach(t => {
         const span = document.createElement('span');
-        span.className = 'buff';
+        span.className = t.startsWith('Admin') ? 'buff admin' : 'buff';
         span.textContent = t;
         buffBox.appendChild(span);
       });
@@ -1231,12 +1237,98 @@ sudo make me_a_sandwich
     return JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
   }
 
+  // ---------- Admin menu ----------
+  function toggleAdmin(open) {
+    const el = $('#admin');
+    const show = open === undefined ? el.hidden : open;
+    el.hidden = !show;
+    if (show) { try { $('#adminClose').focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
+  }
+
+  function breachCurrent() {
+    if (s.breached >= TARGETS.length) return;
+    hack(TARGETS[s.breached].hp - s.targetHp);
+  }
+
+  const ADMIN_ACTIONS = {
+    cash3: () => earn(1e3), cash6: () => earn(1e6), cash9: () => earn(1e9),
+    cash12: () => earn(1e12), cash15: () => earn(1e15),
+    cashx10: () => earn(Math.max(s.bank, 1) * 9),
+    tok10: () => { s.ghost += 10; }, tok100: () => { s.ghost += 100; }, tok1000: () => { s.ghost += 1000; },
+    allperks: () => { PERKS.forEach(p => { if (!hasPerk(p.id)) s.perks.push(p.id); }); applyStartPerks(); },
+    rigs10: () => RIGS.forEach(r => { s.rigs[r.id] = (s.rigs[r.id] || 0) + 10; }),
+    rigs100: () => RIGS.forEach(r => { s.rigs[r.id] = (s.rigs[r.id] || 0) + 100; }),
+    allmods: () => MODS.forEach(m => ownedMods.add(m.id)),
+    alltrophies: () => TROPHIES.forEach(t => { if (!s.trophies.includes(t.id)) s.trophies.push(t.id); }),
+    breach1: breachCurrent,
+    breachall: () => { while (s.breached < TARGETS.length) breachCurrent(); },
+    resetrun: () => { Object.assign(s, freshRun()); ownedMods.clear(); buffs = []; applyStartPerks(); },
+    packet: () => { toggleAdmin(false); if (packet.active) hidePacket(); spawnPacket(); },
+    trace: () => { toggleAdmin(false); if (!trace.active) { const b = D.baseCps; D.baseCps = Math.max(b, 5); startTrace(); D.baseCps = b; } },
+    overclock: () => addBuff('overclock', 'Overclock: income ×7', 60),
+    frenzy: () => addBuff('frenzy', 'Frenzy: keystrokes ×10', 60),
+    warp1h: () => warp(3600), warp1d: () => warp(86400), warp1w: () => warp(7 * 86400),
+  };
+  function warp(secs) {
+    const amt = (D.baseCps + D.autoCps) * secs;
+    earn(amt);
+    hack(amt);
+    s.stats.playTime += secs;
+  }
+
+  function runAdmin(action, label) {
+    const fn = ADMIN_ACTIONS[action];
+    if (!fn) return;
+    s.adminUsed = true;
+    fn();
+    recalc();
+    renderTrophies();
+    modsKey = '';
+    shownBank = s.bank;
+    renderFast();
+    renderSlow();
+    addLog(`Admin: ${label}.`, 'bad');
+    toast('Admin', label);
+    sfx.buy();
+  }
+
+  function renderAdmin() {
+    document.querySelectorAll('[data-speed]').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.speed) === admin.speed ? 'true' : 'false'));
+    document.querySelectorAll('[data-mult]').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.mult) === admin.mult ? 'true' : 'false'));
+  }
+
+  function bindAdmin() {
+    $('#adminBtn').addEventListener('click', () => toggleAdmin(true));
+    $('#adminClose').addEventListener('click', () => toggleAdmin(false));
+    $('#admin').addEventListener('click', e => { if (e.target.id === 'admin') toggleAdmin(false); });
+    document.querySelectorAll('[data-admin]').forEach(b => {
+      b.addEventListener('click', () => runAdmin(b.dataset.admin, b.textContent));
+    });
+    document.querySelectorAll('[data-speed]').forEach(b => b.addEventListener('click', () => {
+      admin.speed = Number(b.dataset.speed);
+      s.adminUsed = true;
+      renderAdmin();
+      toast('Admin', `Game speed ×${admin.speed}`);
+    }));
+    document.querySelectorAll('[data-mult]').forEach(b => b.addEventListener('click', () => {
+      admin.mult = Number(b.dataset.mult);
+      s.adminUsed = true;
+      recalc();
+      renderAdmin();
+      renderFast();
+      toast('Admin', `Income ×${b.textContent.slice(1)}`);
+    }));
+  }
+
   function bindEvents() {
+    bindAdmin();
     document.addEventListener('keydown', e => {
       if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
       const t = e.target;
       const tag = t && t.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+      if (e.key === '`') { e.preventDefault(); toggleAdmin(); return; }
+      if (!$('#admin').hidden) { if (e.key === 'Escape') toggleAdmin(false); return; }
       if (['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Escape', 'Dead'].includes(e.key)) return;
       if ((e.key === 'Enter' || e.key === ' ') && (tag === 'BUTTON' || tag === 'SUMMARY' || tag === 'A')) return;
       if (e.key === ' ') e.preventDefault();
@@ -1374,7 +1466,7 @@ sudo make me_a_sandwich
     let dt = (now - last) / 1000;
     last = now;
     if (!(dt > 0)) dt = 0;
-    dt = Math.min(dt, offlineCap());
+    dt = Math.min(dt, offlineCap()) * admin.speed;
 
     const before = buffs.length;
     buffs = buffs.filter(b => b.until > now);
