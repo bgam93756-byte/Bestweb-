@@ -234,6 +234,7 @@ h2 { margin: 0; }
   text-shadow: 0 0 4px rgba(255, 179, 64, 0.35);
   user-select: none;
   -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 .terminal pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: inherit; }
@@ -254,6 +255,9 @@ h2 { margin: 0; }
   cursor: pointer;
   text-shadow: var(--glow);
   touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .hack-btn:hover { background: var(--line); }
 .hack-btn:active { background: var(--amber); color: var(--on-amber); text-shadow: none; }

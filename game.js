@@ -582,8 +582,23 @@ sudo make me_a_sandwich
     typeCode();
     sfx.key();
     pressHackBtn();
+    scheduleKeyRender();
     if (x != null) floater(x, y, '+' + money(v, true));
     if (s.keystrokes === 1) setText($('#termHint'), 'Keep typing. Buy rigs to earn while idle.');
+  }
+
+  // Update the wallet and terminal on the next frame after each keystroke,
+  // instead of waiting for the 10-per-second game tick.
+  let keyRenderQueued = false;
+  function scheduleKeyRender() {
+    if (keyRenderQueued) return;
+    keyRenderQueued = true;
+    requestAnimationFrame(() => {
+      keyRenderQueued = false;
+      shownBank = s.bank;
+      setText($('#bank'), money(shownBank));
+      renderTerminal();
+    });
   }
 
   let pressTimer = null;
@@ -986,15 +1001,25 @@ sudo make me_a_sandwich
                 visible ? r.top + 30 + Math.random() * Math.max(10, r.height - 60) : null);
     });
 
-    $('#terminal').addEventListener('click', e => keystroke(e.clientX, e.clientY));
+    // Count on press, not release, so every click and every finger counts
+    // no matter how fast you go.
+    let lastPress = 0;
+    const onPress = e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault();
+      lastPress = performance.now();
+      keystroke(e.clientX, e.clientY);
+    };
+    $('#terminal').addEventListener('pointerdown', onPress);
+    $('#hackBtn').addEventListener('pointerdown', onPress);
+    // Keyboard activation of the button (Enter/Space while focused). Skip the
+    // click that follows a press we already counted.
     $('#hackBtn').addEventListener('click', e => {
-      let x = e.clientX, y = e.clientY;
-      if (!e.detail) {
-        const r = e.currentTarget.getBoundingClientRect();
-        x = r.left + r.width / 2; y = r.top;
-      }
-      keystroke(x, y);
+      if (e.detail !== 0 || performance.now() - lastPress < 1000) return;
+      const r = e.currentTarget.getBoundingClientRect();
+      keystroke(r.left + r.width / 2, r.top);
     });
+    $('#hackBtn').addEventListener('contextmenu', e => e.preventDefault());
 
     document.querySelectorAll('.tabs [role="tab"]').forEach(b => {
       b.addEventListener('click', () => { selectTab(b.dataset.tab); renderSlow(); });
